@@ -20,7 +20,7 @@ export const ArticleContent: React.FC = () => {
       </p>
       <div className="relative h-64 md:h-80 w-full my-8 rounded-xl overflow-hidden shadow-lg">
         <img 
-          src="https://picsum.photos/800/400?grayscale&blur=2" 
+          src="https://images.unsplash.com/photo-1482517967863-00e15c9b44be?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
           alt="Vintage Christmas Scene" 
           className="object-cover w-full h-full opacity-80 hover:scale-105 transition-transform duration-700" 
         />

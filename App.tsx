@@ -1,65 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { GlowBackground } from './components/GlowBackground';
 import { ArticleContent } from './components/ArticleContent';
 import { Sidebar } from './components/Sidebar';
 import { ChristmasGame } from './components/ChristmasGame';
-import { Menu, Gift, Sparkles, Facebook, Twitter, Instagram } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { Gift, Sparkles, Facebook, Twitter, Instagram } from 'lucide-react';
 
 const App: React.FC = () => {
   const [isGameOpen, setIsGameOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const gameSectionRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const triggerConfetti = () => {
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#D42426', '#165B33', '#F8B229', '#ffffff']
-    });
+  const handlePlayGame = () => {
+    setIsGameOpen(true);
+    // Add a slight delay to ensure the component is rendered before scrolling
+    setTimeout(() => {
+      gameSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
   };
 
   return (
     <div className="relative min-h-screen font-sans selection:bg-christmas-red selection:text-white">
       <GlowBackground />
       
-      {/* Game Modal */}
-      {isGameOpen && <ChristmasGame onClose={() => setIsGameOpen(false)} />}
-
-      {/* Navigation */}
-      <nav className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${scrolled ? 'bg-slate-950/90 backdrop-blur-md shadow-lg border-b border-white/10 py-3' : 'bg-transparent py-6'}`}>
-        <div className="container mx-auto px-4 lg:px-8 flex justify-between items-center">
-          <div className="flex items-center gap-2 group cursor-pointer" onClick={triggerConfetti}>
-            <div className="w-10 h-10 bg-gradient-to-br from-christmas-red to-red-800 rounded-lg flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform">
-              <Sparkles className="text-white" size={20} />
-            </div>
-            <span className="text-2xl font-serif font-bold text-white tracking-tight">
-              Christmas<span className="text-christmas-gold">Chronicles</span>
-            </span>
-          </div>
-
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-            <a href="#traditions" className="hover:text-christmas-gold transition-colors">Traditions</a>
-            <a href="#decor" className="hover:text-christmas-gold transition-colors">Decor</a>
-            <a href="#gifts" className="hover:text-christmas-gold transition-colors">Gift Guide</a>
-            <a href="#recipes" className="hover:text-christmas-gold transition-colors">Recipes</a>
-          </div>
-
-          <button className="md:hidden text-white">
-            <Menu />
-          </button>
-        </div>
-      </nav>
-
-      <main className="relative z-10 pt-24 pb-20 container mx-auto px-4 lg:px-8">
+      <main className="relative z-10 pt-12 pb-20 container mx-auto px-4 lg:px-8">
         
         {/* Hero Section */}
         <section className="text-center py-16 lg:py-24 max-w-4xl mx-auto">
@@ -79,7 +41,7 @@ const App: React.FC = () => {
           <div className="flex flex-col sm:flex-row justify-center gap-4">
              {/* Game Trigger */}
             <button 
-              onClick={() => setIsGameOpen(true)}
+              onClick={handlePlayGame}
               className="group relative px-8 py-4 bg-christmas-red hover:bg-red-700 text-white rounded-lg font-bold shadow-lg shadow-red-900/50 transition-all hover:-translate-y-1 overflow-hidden"
             >
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
@@ -96,7 +58,7 @@ const App: React.FC = () => {
         </section>
 
         {/* Content Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 max-w-7xl mx-auto mb-20">
           
           {/* Main Article */}
           <div className="lg:col-span-2">
@@ -120,11 +82,18 @@ const App: React.FC = () => {
 
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-28">
+            <div className="sticky top-12">
               <Sidebar />
             </div>
           </div>
         </div>
+        
+        {/* Game Section (Embedded) */}
+        {isGameOpen && (
+          <div ref={gameSectionRef} className="animate-in fade-in slide-in-from-bottom-10 duration-700">
+            <ChristmasGame onClose={() => setIsGameOpen(false)} />
+          </div>
+        )}
 
       </main>
 

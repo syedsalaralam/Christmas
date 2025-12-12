@@ -6,22 +6,7 @@ export const Sidebar: React.FC = () => {
   return (
     <aside className="w-full lg:w-80 space-y-8">
       
-      {/* Newsletter Signup */}
-      <div className="bg-christmas-red/10 border border-christmas-red/30 rounded-xl p-6">
-        <h3 className="font-serif text-xl text-white mb-2">Join the Festivity</h3>
-        <p className="text-sm text-slate-400 mb-4">Get the latest holiday trends and decoration tips delivered to your inbox.</p>
-        <div className="space-y-3">
-          <input 
-            type="email" 
-            placeholder="Your email address" 
-            className="w-full bg-slate-900 border border-slate-700 rounded-md px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-christmas-red"
-          />
-          <button className="w-full bg-christmas-red hover:bg-red-700 text-white font-medium py-2 rounded-md transition-colors">
-            Subscribe
-          </button>
-        </div>
-      </div>
-
+      {/* Ad Placeholder where Subscribe used to be */}
       <AdPlaceholder format="rectangle" label="Sponsored Ad" />
 
       {/* Affiliate Products Placeholder */}
