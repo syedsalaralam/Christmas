@@ -16,6 +16,7 @@ export const ChristmasGame: React.FC<{ onClose: () => void }> = ({ onClose }) =>
   const [isPlaying, setIsPlaying] = useState(false);
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const requestRef = useRef<number>(0);
   const itemsRef = useRef<GameItem[]>([]);
   const scoreRef = useRef(0);
@@ -26,11 +27,32 @@ export const ChristmasGame: React.FC<{ onClose: () => void }> = ({ onClose }) =>
   const SPAWN_RATE = 40; 
   const GRAVITY = 3; 
 
+  // Handle resizing to ensure 1:1 pixel mapping (Perfect Squares)
+  useEffect(() => {
+    const handleResize = () => {
+      if (containerRef.current && canvasRef.current) {
+        const { clientWidth, clientHeight } = containerRef.current;
+        // Resize canvas resolution to match display size exactly
+        // This ensures drawing 50x50 results in a perfect 50px square on screen
+        canvasRef.current.width = clientWidth;
+        canvasRef.current.height = clientHeight;
+      }
+    };
+    
+    // Initial resize
+    handleResize();
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const spawnItem = useCallback((width: number) => {
     const isCoal = Math.random() > 0.75; // 25% chance of coal
+    // Keep items within horizontal bounds (width - 60px to account for item size)
+    const maxX = Math.max(0, width - 60);
     const newItem: GameItem = {
       id: Date.now() + Math.random(),
-      x: Math.random() * (width - 60), // Keep within bounds
+      x: Math.random() * maxX, 
       y: -60,
       baseSpeed: GRAVITY + Math.random() * 2,
       type: isCoal ? 'coal' : 'gift'
@@ -88,6 +110,12 @@ export const ChristmasGame: React.FC<{ onClose: () => void }> = ({ onClose }) =>
         ctx.fillStyle = "#F8B229"; // Gold Ribbon
         ctx.fillRect(item.x + 20, item.y, 10, 50); // Vertical
         ctx.fillRect(item.x, item.y + 20, 50, 10); // Horizontal
+        
+        // Add a slight outline for better visibility against dark backgrounds
+        ctx.strokeStyle = "rgba(255,255,255,0.3)";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(item.x, item.y, 50, 50);
+
       } else {
         ctx.fillStyle = "#1e293b"; // Coal Dark
         ctx.beginPath();
@@ -107,14 +135,13 @@ export const ChristmasGame: React.FC<{ onClose: () => void }> = ({ onClose }) =>
 
   // Timer Countdown
   useEffect(() => {
-    let interval: NodeJS.Timeout;
     if (isPlaying && !gameOver) {
-      interval = setInterval(() => {
+      const interval = setInterval(() => {
         timeRef.current = Math.max(0, timeRef.current - 1);
         setTimeLeft(timeRef.current);
       }, 1000);
+      return () => clearInterval(interval);
     }
-    return () => clearInterval(interval);
   }, [isPlaying, gameOver]);
 
   // Animation Loop
@@ -127,25 +154,29 @@ export const ChristmasGame: React.FC<{ onClose: () => void }> = ({ onClose }) =>
     };
   }, [isPlaying, gameOver, updateGame]);
 
-  const handleCanvasInteraction = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleInteraction = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current || gameOver || !isPlaying) return;
-
-    // Get exact click coordinates relative to canvas scaling
-    const rect = canvasRef.current.getBoundingClientRect();
-    const scaleX = canvasRef.current.width / rect.width;
-    const scaleY = canvasRef.current.height / rect.height;
     
-    const clickX = (e.clientX - rect.left) * scaleX;
-    const clickY = (e.clientY - rect.top) * scaleY;
+    // Prevent default browser actions (like scrolling or zooming) on touch
+    e.preventDefault();
+
+    // Get click coordinates - NO SCALING NEEDED because canvas size matches display size
+    const rect = canvasRef.current.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
 
     // Check collisions
+    // We iterate backwards or just filter. Filtering is safe.
     itemsRef.current = itemsRef.current.filter(item => {
-      // Center of item is item.x + 25, item.y + 25 (since width/height is 50)
+      // Center of item is item.x + 25, item.y + 25
       const centerX = item.x + 25;
       const centerY = item.y + 25;
+      
+      // Calculate distance
       const distance = Math.sqrt(Math.pow(clickX - centerX, 2) + Math.pow(clickY - centerY, 2));
       
-      if (distance < 50) { // Generous hit radius
+      // Hit Radius: 50px (Generous, covers the corners of the square box and allows for slight inaccuracy at high speeds)
+      if (distance < 50) { 
         if (item.type === 'gift') {
           scoreRef.current += 10;
           timeRef.current += 2; // +2 seconds
@@ -210,14 +241,17 @@ export const ChristmasGame: React.FC<{ onClose: () => void }> = ({ onClose }) =>
           </div>
         </div>
 
-        {/* Game Area */}
-        <div className="relative flex-grow bg-slate-900 cursor-crosshair overflow-hidden">
+        {/* Game Area Container - This div defines the size */}
+        <div 
+          ref={containerRef}
+          className="relative flex-grow bg-slate-900 cursor-crosshair overflow-hidden touch-none"
+        >
           {!isPlaying && !gameOver && (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 z-10 bg-slate-900/80 backdrop-blur-sm">
               <Gift size={64} className="text-christmas-gold mb-4 animate-bounce" />
               <h2 className="text-3xl font-bold text-white mb-2">Ready?</h2>
               <div className="text-slate-300 text-sm mb-6 space-y-1">
-                <p>🎁 Click to Smash: <span className="text-green-400">+2s</span> & Speed Up</p>
+                <p>🎁 Tap to Smash: <span className="text-green-400">+2s</span> & Speed Up</p>
                 <p>⚫ Avoid Coal: <span className="text-red-400">-1s</span> penalty</p>
                 <p>⏳ Missed Gift: <span className="text-red-400">-1s</span> penalty</p>
                 <p>⏱️ Survive for <span className="text-christmas-gold">60s</span></p>
@@ -252,10 +286,9 @@ export const ChristmasGame: React.FC<{ onClose: () => void }> = ({ onClose }) =>
 
           <canvas 
             ref={canvasRef}
-            width={1200} 
-            height={800}
-            className="w-full h-full block touch-none"
-            onMouseDown={handleCanvasInteraction}
+            className="block touch-none select-none"
+            style={{ width: '100%', height: '100%', touchAction: 'none' }}
+            onPointerDown={handleInteraction}
           />
         </div>
       </div>
