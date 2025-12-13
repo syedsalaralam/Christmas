@@ -45,7 +45,7 @@ const App: React.FC = () => {
               className="group relative px-8 py-4 bg-christmas-red hover:bg-red-700 text-white rounded-lg font-bold shadow-lg shadow-red-900/50 transition-all hover:-translate-y-1 overflow-hidden"
             >
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-              <div className="relative flex items-center gap-2">
+              <div className="relative flex items-center justify-center gap-2">
                 <Gift className="animate-pulse" />
                 Play Gift Dash
               </div>
