@@ -27,23 +27,32 @@ export const ChristmasGame: React.FC<{ onClose: () => void }> = ({ onClose }) =>
   const SPAWN_RATE = 40; 
   const GRAVITY = 3; 
 
-  // Handle resizing to ensure 1:1 pixel mapping (Perfect Squares)
+  // Handle resizing using ResizeObserver for accuracy on all devices
   useEffect(() => {
-    const handleResize = () => {
-      if (containerRef.current && canvasRef.current) {
-        const { clientWidth, clientHeight } = containerRef.current;
-        // Resize canvas resolution to match display size exactly
-        // This ensures drawing 50x50 results in a perfect 50px square on screen
-        canvasRef.current.width = clientWidth;
-        canvasRef.current.height = clientHeight;
+    if (!containerRef.current || !canvasRef.current) return;
+
+    const updateCanvasSize = () => {
+      const container = containerRef.current;
+      const canvas = canvasRef.current;
+      if (container && canvas) {
+        // Set actual canvas resolution to match CSS display size
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
       }
     };
-    
-    // Initial resize
-    handleResize();
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+
+    // Initial sizing
+    updateCanvasSize();
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateCanvasSize();
+    });
+
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
   }, []);
 
   const spawnItem = useCallback((width: number) => {
@@ -160,14 +169,26 @@ export const ChristmasGame: React.FC<{ onClose: () => void }> = ({ onClose }) =>
     // Prevent default browser actions (like scrolling or zooming) on touch
     e.preventDefault();
 
-    // Get click coordinates - NO SCALING NEEDED because canvas size matches display size
-    const rect = canvasRef.current.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const clickY = e.clientY - rect.top;
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+
+    // Calculate scaling factors
+    // This handles cases where internal resolution doesn't perfectly match displayed size
+    // ensuring hit detection is accurate even if CSS distorts the canvas slightly
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    // Get accurate click coordinates relative to the canvas internal drawing
+    const clickX = (e.clientX - rect.left) * scaleX;
+    const clickY = (e.clientY - rect.top) * scaleY;
 
     // Check collisions
-    // We iterate backwards or just filter. Filtering is safe.
+    let hitSomething = false;
+
+    // We filter items to remove the one that was clicked
     itemsRef.current = itemsRef.current.filter(item => {
+      if (hitSomething) return true; // Only hit one item per tap
+
       // Center of item is item.x + 25, item.y + 25
       const centerX = item.x + 25;
       const centerY = item.y + 25;
@@ -175,8 +196,9 @@ export const ChristmasGame: React.FC<{ onClose: () => void }> = ({ onClose }) =>
       // Calculate distance
       const distance = Math.sqrt(Math.pow(clickX - centerX, 2) + Math.pow(clickY - centerY, 2));
       
-      // Hit Radius: 50px (Generous, covers the corners of the square box and allows for slight inaccuracy at high speeds)
+      // Hit Radius: 50px (Generous)
       if (distance < 50) { 
+        hitSomething = true;
         if (item.type === 'gift') {
           scoreRef.current += 10;
           timeRef.current += 2; // +2 seconds
@@ -286,8 +308,8 @@ export const ChristmasGame: React.FC<{ onClose: () => void }> = ({ onClose }) =>
 
           <canvas 
             ref={canvasRef}
-            className="block touch-none select-none"
-            style={{ width: '100%', height: '100%', touchAction: 'none' }}
+            className="block touch-none select-none w-full h-full"
+            style={{ touchAction: 'none' }}
             onPointerDown={handleInteraction}
           />
         </div>
