@@ -24,18 +24,18 @@ const App: React.FC = () => {
       <main className="relative z-10 pt-12 pb-20 container mx-auto px-4 lg:px-8">
         
         {/* Hero Section */}
-        <section className="text-center py-16 lg:py-24 max-w-4xl mx-auto">
+        <section className="text-center py-12 md:py-24 max-w-4xl mx-auto">
           <div className="inline-block mb-4 px-4 py-1.5 rounded-full bg-christmas-green/20 border border-christmas-green/40 text-christmas-green text-xs font-bold uppercase tracking-widest">
             A Timeless Tradition
           </div>
           <h1 className="text-4xl md:text-6xl font-serif font-bold text-white leading-tight mb-6 drop-shadow-2xl">
-            The Magic of Christmas: <br />
+            The Magic of Christmas 2025: <br />
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-christmas-gold to-yellow-200">
               Shaping Culture & Connection
             </span>
           </h1>
           <p className="text-lg text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Discover the rich history and modern evolution of the world's most beloved festival.
+            Discover the rich history, gift ideas, and modern evolution of the world's most beloved festival.
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4">
@@ -45,7 +45,7 @@ const App: React.FC = () => {
               className="group relative px-8 py-4 bg-christmas-red hover:bg-red-700 text-white rounded-lg font-bold shadow-lg shadow-red-900/50 transition-all hover:-translate-y-1 overflow-hidden"
             >
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-              <div className="relative flex items-center justify-center gap-2">
+              <div className="relative flex items-center justify-center gap-2 justify-center">
                 <Gift className="animate-pulse" />
                 Play Gift Dash
               </div>
@@ -62,7 +62,7 @@ const App: React.FC = () => {
           
           {/* Main Article */}
           <div className="lg:col-span-2">
-            <div className="bg-slate-900/40 backdrop-blur-sm border border-white/5 rounded-2xl p-8 lg:p-12 shadow-xl">
+            <div className="bg-slate-900/40 backdrop-blur-sm border border-white/5 rounded-2xl p-6 md:p-12 shadow-xl">
               <ArticleContent />
             </div>
             
