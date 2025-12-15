@@ -27,7 +27,7 @@ export const ChristmasGame: React.FC<{ onClose: () => void }> = ({ onClose }) =>
   const SPAWN_RATE = 40; 
   const GRAVITY = 3; 
 
-  // Handle resizing using ResizeObserver for accuracy on all devices
+  // Handle resizing with Device Pixel Ratio (DPR) support
   useEffect(() => {
     if (!containerRef.current || !canvasRef.current) return;
 
@@ -35,30 +35,47 @@ export const ChristmasGame: React.FC<{ onClose: () => void }> = ({ onClose }) =>
       const container = containerRef.current;
       const canvas = canvasRef.current;
       if (container && canvas) {
-        // Set actual canvas resolution to match CSS display size
-        canvas.width = container.clientWidth;
-        canvas.height = container.clientHeight;
+        // Get the device pixel ratio, falling back to 1.
+        const dpr = window.devicePixelRatio || 1;
+        
+        // Get the logical size (CSS pixels)
+        const rect = container.getBoundingClientRect();
+
+        // Set the actual internal resolution of the canvas
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+
+        // Scale the context to ensure drawing operations use CSS pixels conceptually
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.scale(dpr, dpr);
+        }
       }
     };
 
     // Initial sizing
     updateCanvasSize();
 
+    // Use ResizeObserver for accurate detection of size changes (e.g., toolbar show/hide)
     const resizeObserver = new ResizeObserver(() => {
       updateCanvasSize();
     });
 
     resizeObserver.observe(containerRef.current);
 
+    // Also add window resize listener as a backup
+    window.addEventListener('resize', updateCanvasSize);
+
     return () => {
       resizeObserver.disconnect();
+      window.removeEventListener('resize', updateCanvasSize);
     };
   }, []);
 
-  const spawnItem = useCallback((width: number) => {
+  const spawnItem = useCallback((containerWidth: number) => {
     const isCoal = Math.random() > 0.75; // 25% chance of coal
-    // Keep items within horizontal bounds (width - 60px to account for item size)
-    const maxX = Math.max(0, width - 60);
+    // Keep items within horizontal bounds
+    const maxX = Math.max(0, containerWidth - 60);
     const newItem: GameItem = {
       id: Date.now() + Math.random(),
       x: Math.random() * maxX, 
@@ -70,10 +87,14 @@ export const ChristmasGame: React.FC<{ onClose: () => void }> = ({ onClose }) =>
   }, []);
 
   const updateGame = useCallback((timestamp: number) => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || !containerRef.current) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    // Use container dimensions for logic (CSS pixels), not canvas.width (Device pixels)
+    const logicWidth = containerRef.current.clientWidth;
+    const logicHeight = containerRef.current.clientHeight;
 
     if (timeRef.current <= 0) {
       setGameOver(true);
@@ -81,12 +102,13 @@ export const ChristmasGame: React.FC<{ onClose: () => void }> = ({ onClose }) =>
       return;
     }
 
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Clear canvas - note: we clear based on internal resolution or use a massive rect
+    // Since we scaled the context, clearing 0,0 to logicWidth,logicHeight works
+    ctx.clearRect(0, 0, logicWidth, logicHeight);
 
     // Spawn logic
     if (Math.random() < (1 / SPAWN_RATE)) {
-      spawnItem(canvas.width);
+      spawnItem(logicWidth);
     }
 
     // Update items position
@@ -96,7 +118,7 @@ export const ChristmasGame: React.FC<{ onClose: () => void }> = ({ onClose }) =>
 
     // Handle off-screen items (Remove & Apply Penalties)
     itemsRef.current = itemsRef.current.filter(item => {
-      const isOffScreen = item.y >= canvas.height;
+      const isOffScreen = item.y >= logicHeight;
       if (isOffScreen) {
         // Penalty: If a gift is missed, reduce time by 1s
         if (item.type === 'gift') {
@@ -166,21 +188,21 @@ export const ChristmasGame: React.FC<{ onClose: () => void }> = ({ onClose }) =>
   const handleInteraction = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current || gameOver || !isPlaying) return;
     
-    // Prevent default browser actions (like scrolling or zooming) on touch
+    // Prevent default browser actions
     e.preventDefault();
 
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
 
-    // Calculate scaling factors
-    // This handles cases where internal resolution doesn't perfectly match displayed size
-    // ensuring hit detection is accurate even if CSS distorts the canvas slightly
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-
-    // Get accurate click coordinates relative to the canvas internal drawing
-    const clickX = (e.clientX - rect.left) * scaleX;
-    const clickY = (e.clientY - rect.top) * scaleY;
+    // Since we handle drawing in logic pixels (CSS pixels), we just need the click pos in CSS pixels.
+    // rect.left/top are in CSS pixels. e.clientX/Y are in CSS pixels.
+    // No advanced scaling needed if width/height attributes match rect (handled by DPR scaling in updateCanvasSize)
+    // However, for safety, let's calculate the ratio of logical draw space to visual space.
+    
+    // Current logical drawing width (set in updateCanvasSize via ctx.scale) matches clientWidth effectively.
+    // So clickX should just be relative to the element.
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
 
     // Check collisions
     let hitSomething = false;
