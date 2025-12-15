@@ -3,6 +3,7 @@ import { GlowBackground } from './components/GlowBackground';
 import { ArticleContent } from './components/ArticleContent';
 import { Sidebar } from './components/Sidebar';
 import { ChristmasGame } from './components/ChristmasGame';
+import { CookieConsent } from './components/CookieConsent';
 import { Gift, Sparkles, Facebook, Twitter, Instagram } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -126,6 +127,9 @@ const App: React.FC = () => {
           </p>
         </div>
       </footer>
+
+      {/* Cookie Consent Banner - Required for AdSense/Monetag compliance */}
+      <CookieConsent />
     </div>
   );
 };

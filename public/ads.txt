@@ -1,1 +1,5 @@
 google.com, pub-1480121012236265, DIRECT, f08c47fec0942fa0
+# Please visit your Monetag dashboard (https://monetag.com/) to get your specific ads.txt line.
+# It typically looks like: monetag.com, [YOUR_PUBLISHER_ID], DIRECT, [ID]
+# Paste it below this line to authorize Monetag to sell your inventory.
+monetag.com, 3150367, DIRECT, 0c9a7f7d43b8cfa9
