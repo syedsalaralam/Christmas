@@ -25,9 +25,17 @@ export const Sidebar: React.FC = () => {
         
       
       </div>
-
-      <AdPlaceholder format="vertical" className="hidden lg:flex" label="Vertical Banner Ad" />
-
+<div>
+      
+          <a href="https://www.effectivegatecpm.com/cc3uaikdap?key=e0f1cdc60201ea32d7578e3f6cb3d9b6" target="_blank" rel="noopener noreferrer" className="group snap-center shrink-0 w-[70%] sm:w-auto">
+              <div className="flex justify-center">
+                <img src="https://adsterra.com/_nuxt/img/logo_desktop.1932b11.svg" className="" alt="Christmas gift idea" />
+              </div>
+               <span className="block text-center text-xs mt-2 text-christmas-gold opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity"><h4>"Ads"</h4></span>
+            </a>
+      
+          
+</div>
     </aside>
   );
 };
