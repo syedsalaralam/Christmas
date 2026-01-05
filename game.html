@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Santa Rush - Christmas Chronicles Game</title>
+  <meta name="description" content="Play Santa Rush! Help Santa collect gifts and avoid coal in this festive Christmas game." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <script>
+    tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+              serif: ['"Merriweather"', 'serif'],
+            },
+            colors: {
+              christmas: {
+                red: '#D42426',
+                green: '#165B33',
+                gold: '#F8B229',
+                dark: '#0F172A',
+                snow: '#F8FAFC'
+              }
+            }
+          }
+        }
+      }
+  </script>
+  <style>
+    body {
+      background-color: #0F172A;
+      color: #F8FAFC;
+      margin: 0;
+      /* Prevent scrolling on the game page wrapper */
+      overflow: hidden; 
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/game.tsx"></script>
+</body>
+</html>
